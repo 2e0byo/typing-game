@@ -106,6 +106,8 @@ class Game:
                 k = chr(ch)
                 for word in words:
                     if word.next_char == k:
+                        if not self.score.start_time:
+                            self.score.start_time = now
                         word.submit(k)
                         return word
             now = self.timer()

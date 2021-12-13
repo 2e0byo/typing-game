@@ -15,10 +15,12 @@ class Score:
         self.fast = 1000
         self.seconds = 0
         self.chars = 0
+        self.start_time = 0
+        self.elapsed = 0
 
     def wpm(self, chars=None, seconds=None) -> float:
         chars = chars or self.chars
-        seconds = seconds or self.seconds
+        seconds = seconds or self.elapsed - self.start_time
         words = chars / self.AVG_WORD_LEN
         return 0.0 if not chars else words / (seconds / 60)
 
