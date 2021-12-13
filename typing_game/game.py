@@ -1,7 +1,11 @@
+import csv
 import curses
 import sys
+from appdirs import AppDirs
 from random import choices, randint
 from time import sleep
+from pathlib import Path
+from datetime import datetime
 
 from .score import Score
 from .terminal import Terminal
@@ -14,7 +18,13 @@ INPUT_LOOP_DELAY = 0.001
 
 
 class Game:
-    def __init__(self, words: list[str], weights: dict[str, float], terminal: Terminal):
+    def __init__(
+        self,
+        words: list[str],
+        weights: dict[str, float],
+        terminal: Terminal,
+        user,
+    ):
         self.words = words
         self.weights = weights
         self.timer = PausableMonotonic()
@@ -22,6 +32,9 @@ class Game:
         self.terminal = terminal
         self.initial_delay = 0.5
         self.initial_new_word_pause = 3
+        self.AppDirs = AppDirs("typing-game", "JohnMorris")
+        self.user = user
+        self.load_highscores()
 
     @property
     def delay(self):
@@ -95,6 +108,7 @@ class Game:
         ch = self.terminal.main_win.getch()
         if ch == 27:
             self.menu()
+            return -1
         else:
             return ch
 
@@ -148,6 +162,8 @@ class Game:
         for row, (key, (text, fn)) in enumerate(options.items()):
             win.addstr(row + 1, 2, key, curses.A_BOLD)
             win.addstr(row + 1, 4, text)
+
+        win.addstr(row + 2, 1, str(self.highscoresf))
         while True:
             key = win.getkey()
             entry = options.get(key)
@@ -162,10 +178,39 @@ class Game:
         self.terminal.main_win.refresh()
         self.timer.unpause()
 
+    @property
+    def highscoresf(self):
+        d = Path(self.AppDirs.user_data_dir)
+        d.mkdir(exist_ok=True)
+        return d / "highscores.csv"
+
+    def load_highscores(self):
+        try:
+            with self.highscoresf.open("r") as f:
+                self._highscores = list(csv.DictReader(f))
+        except Exception:
+            self._highscores = []
+
+    def highscores(self, user):
+        return [x for x in self._highscores if x["User"] == user]
+
+    def save_highscores(self):
+        with self.highscoresf.open("w") as f:
+            writer = csv.DictWriter(f, fieldnames=("User", "Date", "Score"))
+            writer.writeheader()
+            writer.writerows(self._highscores)
+
     def quit(self):
-        print("Implement saving here.")
+        self._highscores.append(
+            dict(
+                User=self.user,
+                Date=datetime.now().isoformat(),
+                Score=self.score.current_score,
+            )
+        )
+        self.save_highscores()
         sys.exit()
 
 
-game = Game(words, weights, Terminal())
+game = Game(words, weights, Terminal(), user="Emma")
 curses.wrapper(game.main)

@@ -18,6 +18,10 @@ class Score:
         self.start_time = 0
         self.elapsed = 0
 
+    @property
+    def current_score(self):
+        return self._score
+
     def wpm(self, chars=None, seconds=None) -> float:
         chars = chars or self.chars
         seconds = seconds or self.elapsed - self.start_time
