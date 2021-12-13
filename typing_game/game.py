@@ -25,6 +25,10 @@ class Game:
         """Main loop."""
         self.terminal.stdscr = stdscr
         stdscr.clear()
+
+        curses.use_default_colors()
+        for i in range(0, curses.COLORS):
+            curses.init_pair(i, i, -1)
         curses.curs_set(False)
 
         self.score = Score(self.terminal)
