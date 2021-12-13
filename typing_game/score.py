@@ -46,7 +46,7 @@ class Score:
         if old_wpm and abs(self.wpm() - old_wpm) / old_wpm > 0.1:
             self.set_fast()
 
-        self._score += multiplier * chars * 10 * (self.fast / self.wpm(chars, seconds))
+        self._score += multiplier * chars * 2 * (self.fast / self.wpm(chars, seconds))
         self.display()
 
     def display(self):

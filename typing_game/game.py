@@ -20,21 +20,36 @@ INPUT_LOOP_DELAY = 0.001
 class Game:
     def __init__(
         self,
-        words: list[str],
-        weights: dict[str, float],
         terminal: Terminal,
         user,
+        dictionary: Path = None,
     ):
-        self.words = words
-        self.weights = weights
         self.timer = PausableMonotonic()
         self.running = True
         self.terminal = terminal
         self.initial_delay = 0.5
         self.initial_new_word_pause = 3
         self.AppDirs = AppDirs("typing-game", "JohnMorris")
+        self.user_dir = Path(self.AppDirs.user_data_dir)
+        self.user_dir.mkdir(exist_ok=True)
         self.user = user
         self.load_highscores()
+        if dictionary:
+            if dictionary.suffix == "csv":
+                self.load_words(dictionary)
+            else:
+                self.load_weight_by_length(dictionary)
+
+    def load_weight_by_length(self, dictionary: Path):
+        words, weights = [], {}
+        with dictionary.open() as f:
+            for word in f:
+                word = word.strip()
+                words.append(word)
+                weights[word] = max(1, 100 - len(word) * 10)
+        self.words = words
+        self.weights = weights
+        assert len(words) == len(weights)
 
     @property
     def delay(self):
@@ -48,7 +63,9 @@ class Game:
         _, max_x = self.terminal.main_win.getmaxyx()
         word = choices(self.words, self.weights.values())[0]
         x = randint(0, max_x - len(word) - 1)
-        word = Word(word, weights[word], self.terminal, x, 0, self.score, self.timer)
+        word = Word(
+            word, self.weights[word], self.terminal, x, 0, self.score, self.timer
+        )
         return word
 
     def main(self, stdscr):
@@ -180,9 +197,7 @@ class Game:
 
     @property
     def highscoresf(self):
-        d = Path(self.AppDirs.user_data_dir)
-        d.mkdir(exist_ok=True)
-        return d / "highscores.csv"
+        return self.user_dir / "highscores.csv"
 
     def load_highscores(self):
         try:
@@ -200,6 +215,29 @@ class Game:
             writer.writeheader()
             writer.writerows(self._highscores)
 
+    @property
+    def dict_path(self):
+        return self.user_dir / "words.csv"
+
+    def load_words(self, path: Path = None):
+        path = path or self.dict_path
+
+        words, weights = [], {}
+        with path.open("r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                words.append(row["Word"])
+                weights[row["Word"]] = row["Weight"]
+        self.words = words
+        self.weights = weights
+
+    def save_words(self):
+        with self.dict_path.open("w") as f:
+            writer = csv.DictWriter(f, fieldnames=("Words", "Weight"))
+            writer.writeheader()
+            for word, weight in zip(self.words, self.weights.values()):
+                writer.writerow(dict(word=word, weight=weight))
+
     def quit(self):
         self._highscores.append(
             dict(
@@ -212,5 +250,5 @@ class Game:
         sys.exit()
 
 
-game = Game(words, weights, Terminal(), user="Emma")
+game = Game(Terminal(), user="Emma", dictionary=Path("wordlist.txt"))
 curses.wrapper(game.main)

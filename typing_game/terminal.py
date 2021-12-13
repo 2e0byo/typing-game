@@ -64,3 +64,11 @@ class Terminal:
         win.bkgd(self.colors["bg"])
         win.box()
         return win
+
+    @property
+    def entry_field(self):
+        max_y, max_x = self.stdscr.getmaxyx()
+        win = newwin(4, 40, max_y // 2 - 5, max_x // 2 - 20)
+        win.bkgd(self.colors["bg"])
+        win.box()
+        return win
