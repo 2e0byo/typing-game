@@ -39,12 +39,6 @@ class Word:
     def untyped_format(self):
         return self.terminal.colors["untyped"] | curses.A_BOLD
 
-    def speed_multiplier(self, seconds_per_char: float):
-        """A multiplier which should be slightly above 1 for fast typing and
-        slightly below 1 for slow typing."""
-        # return time * 1000 / len(self.typed)
-        return 1
-
     def score(self, now):
         """Calculate weighting for word and increase highscore (if appropriate)."""
         self.clear()
@@ -52,7 +46,7 @@ class Word:
             return self._score + len(self.untyped)
         else:
             seconds = now - self.start
-            multiplier = self.speed_multiplier(seconds / self._len)
+            multiplier = self.highscore.speed_multiplier(seconds, self._len)
 
             self.highscore.score(multiplier, self._len, seconds, now)
             return self._score / (2 * multiplier)
