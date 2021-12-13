@@ -106,7 +106,7 @@ class Game:
                 k = chr(ch)
                 for word in words:
                     if word.next_char == k:
-                        word.submit(k, now)
+                        word.submit(k)
                         return word
             now = self.timer()
 
@@ -118,7 +118,7 @@ class Game:
         while now - start < self.delay:
             ch = self.getch()
             if ch != -1:
-                ret = word.submit(chr(ch), now)
+                ret = word.submit(chr(ch))
                 word.display()
                 if ret is not False:
                     word.display()
