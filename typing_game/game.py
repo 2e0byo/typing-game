@@ -72,7 +72,9 @@ class Game:
                 if w.y == max_y:
                     weights[w.word] = w.score(self.timer())
                     try:
-                        words.remove(word)
+                        words.remove(w)
+                        if word is w:
+                            selected = False
                     except ValueError:
                         pass
 
