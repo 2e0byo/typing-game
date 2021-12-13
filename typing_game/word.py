@@ -20,7 +20,7 @@ class Word:
         self.word = word
         self.untyped = word
         self._score = score
-        self._next_char = word[0]
+        self.next_char = word[0]
         self.start = None
         self.scr = terminal.main_win
         assert self.scr
@@ -59,7 +59,7 @@ class Word:
 
     def submit(self, k: str, now: float):
         """Submit k as a char in the word."""
-        if k != self._next_char:
+        if k != self.next_char:
             return False
 
         if not self.start:
@@ -67,7 +67,7 @@ class Word:
         self.typed += k
         self.untyped = self.untyped[1:]
         if self.untyped:
-            self._next_char = self.untyped[0]
+            self.next_char = self.untyped[0]
             return None
         else:
             return self.score(now)
