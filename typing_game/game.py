@@ -80,17 +80,32 @@ class Game:
 
     def menu(self):
         self.timer.pause()
+        options = {
+            "r": ("Return to Game", None),
+            "q": ("Quit", self.quit),
+        }
+
         win = self.terminal.menu_win
-        win.addstr(1, 2, "r", curses.A_BOLD)
-        win.addstr(1, 4, " Return to Game.")
+        for row, (key, (text, fn)) in enumerate(options.items()):
+            win.addstr(row + 1, 2, key, curses.A_BOLD)
+            win.addstr(row + 1, 4, text)
         while True:
             key = win.getkey()
-            if key == "r":
-                break
+            entry = options.get(key)
+            if entry:
+                fn = entry[1]
+                if fn:
+                    fn()
+                else:
+                    break
         del win
         self.terminal.main_win.touchwin()
         self.terminal.main_win.refresh()
         self.timer.unpause()
+
+    def quit(self):
+        print("Implement saving here.")
+        sys.exit()
 
 
 game = Game(words, weights, Terminal())
