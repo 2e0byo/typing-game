@@ -45,3 +45,7 @@ class Score:
             f"Current Score: {round(self._score):>8}",
         )
         self.scr.refresh()
+
+    @property
+    def level(self):
+        return self._score // 1_000

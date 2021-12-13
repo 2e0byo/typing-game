@@ -20,6 +20,23 @@ class Game:
         self.timer = PausableMonotonic()
         self.running = True
         self.terminal = terminal
+        self.initial_delay = 0.5
+        self.initial_new_word_pause = 3
+
+    @property
+    def delay(self):
+        return self.initial_delay / (self.score.level + 1)
+
+    @property
+    def new_word_pause(self):
+        return self.initial_new_word_pause / (self.score.level + 1)
+
+    def draw_word(self):
+        _, max_x = self.terminal.main_win.getmaxyx()
+        word = choices(self.words, self.weights.values())[0]
+        x = randint(0, max_x - len(word) - 1)
+        word = Word(word, weights[word], self.terminal, x, 0, self.score, self.timer)
+        return word
 
     def main(self, stdscr):
         """Main loop."""
