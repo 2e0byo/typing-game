@@ -28,11 +28,12 @@ class Score:
         """Set `fast` threshold as 150% of current wpm."""
         self.fast = self.wpm() * 1.5
 
-    def score(self, multiplier: float, chars: int, seconds: float):
+    def score(self, multiplier: float, chars: int, seconds: float, now: float):
         old_wpm = self.wpm()
         self.chars += chars
         self.seconds += seconds
         if old_wpm and abs(self.wpm() - old_wpm) / old_wpm > 0.1:
+        self.elapsed = now
             self.set_fast()
 
         self._score += multiplier * chars * 10 * (self.fast / self.wpm(chars, seconds))
