@@ -1,10 +1,12 @@
 import curses
-from .terminal import Terminal
-from .word import Word
-from .score import Score
-from .timer import PausableMonotonic
+import sys
 from random import choices, randint
 from time import sleep
+
+from .score import Score
+from .terminal import Terminal
+from .timer import PausableMonotonic
+from .word import Word
 
 words = ("add", "subtract", "next")
 weights = {k: 100 for k in words}
