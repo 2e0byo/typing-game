@@ -52,37 +52,70 @@ class Game:
         self.score.display()
         max_y, max_x = stdscr.getmaxyx()
         max_y -= 2
+        words = []
+        selected = False
+        start = self.timer()
+        word = None
 
         while self.running:
-            word = choices(self.words, self.weights.values())[0]
-            x = randint(0, max_x - len(word))
-            word = Word(
-                word, weights[word], self.terminal, x, 0, self.score, self.timer
-            )
+            now = self.timer()
+            if not words or now - start > self.new_word_pause:
+                words.append(self.draw_word())
+                start = now
 
-            delay = 0.1
+            for w in words:
+                if w.y:
+                    w.clear()
+                w.y += 1
+                w.display()
+                if w.y == max_y:
+                    weights[w.word] = w.score(self.timer())
+                    try:
+                        words.remove(word)
+                    except ValueError:
+                        pass
 
-            typed = False
-            word.start = self.timer()
-            for y in range(max_y):
-                if y:
-                    word.clear()
-                word.y = y
-                word.display()
-                if self.input_loop(word, delay):
-                    typed = True
-                    break
+            if not selected:
+                word = self.select_word(words)
+                if not word:
+                    continue
+                selected = True
 
-            if word.untyped:
-                weights[word.word] = word.score(self.timer())
+            if self.input_loop(word):
+                try:
+                    words.remove(word)
+                except ValueError:
+                    continue
+                selected = False
 
-    def input_loop(self, word: Word, delay: float):
+    def getch(self):
+        ch = self.terminal.main_win.getch()
+        if ch == 27:
+            self.menu()
+        else:
+            return ch
+
+    def select_word(self, words):
+        """Get word to type."""
+        now = start = self.timer()
+        scr = self.terminal.main_win
+        while now - start < self.delay:
+            ch = self.getch()
+            if ch != -1:
+                k = chr(ch)
+                for word in words:
+                    if word.next_char == k:
+                        word.submit(k, now)
+                        return word
+            now = self.timer()
+
+        return None
+
+    def input_loop(self, word: Word):
         """Input loop in game."""
         now = start = self.timer()
-        while now - start < delay:
-            ch = word.scr.getch()
-            if ch == 27:
-                self.menu()
+        while now - start < self.delay:
+            ch = self.getch()
             if ch != -1:
                 ret = word.submit(chr(ch), now)
                 word.display()
