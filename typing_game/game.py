@@ -52,6 +52,7 @@ class Game:
         self.score.display()
         max_y, max_x = self.terminal.main_win.getmaxyx()
         max_y -= 1
+
         words = []
         selected = False
         start = self.timer()
