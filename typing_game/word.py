@@ -54,16 +54,18 @@ class Word:
             seconds = now - self.start
             multiplier = self.speed_multiplier(seconds / self._len)
 
-            self.highscore.score(multiplier, self._len, seconds)
+            self.highscore.score(multiplier, self._len, seconds, now)
             return self._score / (2 * multiplier)
 
-    def submit(self, k: str, now: float):
+    def submit(self, k: str):
         """Submit k as a char in the word."""
         if k != self.next_char:
             return False
 
+        now = self.timer()
         if not self.start:
-            self.start = self.timer()
+            self.start = now
+
         self.typed += k
         self.untyped = self.untyped[1:]
         if self.untyped:
